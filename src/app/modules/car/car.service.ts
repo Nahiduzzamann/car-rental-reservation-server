@@ -29,11 +29,21 @@ const getAllCarsIntoDB = async () => {
     throw new Error(err);
   }
 };
+const getACarIntoDB = async (id: string) => {
+  try {
+    const car = await Car.findById(id);
+    if (!car || car.isDeleted) {
+      throw new AppError(httpStatus.BAD_REQUEST, "Car not found");
+    }
 
-
-
+    return car;
+  } catch (err: any) {
+    throw new Error(err);
+  }
+};
 
 export const CarServices = {
   createCarIntoDB,
-  getAllCarsIntoDB
+  getAllCarsIntoDB,
+  getACarIntoDB,
 };

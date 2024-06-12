@@ -56,10 +56,27 @@ const updateCarIntoDB = async (req: Request) => {
     throw new Error(err);
   }
 };
+const deleteCarIntoDB = async (req: Request) => {
+  try {
+    const car = await Car.findByIdAndUpdate(
+      req.params.id,
+      { isDeleted: true },
+      { new: true }
+    );
+    if (!car) {
+      throw new AppError(httpStatus.BAD_REQUEST, "Car not found");
+    }
+
+    return car;
+  } catch (err: any) {
+    throw new Error(err);
+  }
+};
 
 export const CarServices = {
   createCarIntoDB,
   getAllCarsIntoDB,
   getACarIntoDB,
   updateCarIntoDB,
+  deleteCarIntoDB,
 };

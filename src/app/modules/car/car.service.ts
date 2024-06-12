@@ -16,7 +16,24 @@ const createCarIntoDB = async (payload: ICar) => {
     throw new Error(err);
   }
 };
+const getAllCarsIntoDB = async () => {
+  try {
+    const cars = await Car.find({ isDeleted: false });
+
+    if (!cars) {
+      throw new AppError(httpStatus.BAD_REQUEST, "Failed to fetch car");
+    }
+
+    return cars;
+  } catch (err: any) {
+    throw new Error(err);
+  }
+};
+
+
+
 
 export const CarServices = {
   createCarIntoDB,
+  getAllCarsIntoDB
 };

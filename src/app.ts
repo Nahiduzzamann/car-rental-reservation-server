@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import bodyParser from "body-parser";
 import express, { Application } from "express";
 import router from "./app/routes";
+import globalErrorHandler from "./app/middlewares/globalErrorHandler";
 
 const app: Application = express();
 dotenv.config();
@@ -17,7 +18,7 @@ app.use(cors());
 // application routes
 app.use("/api", router);
 
-// app.use(globalErrorHandler);
+app.use(globalErrorHandler);
 
 //Not Found
 // app.use(notFound);

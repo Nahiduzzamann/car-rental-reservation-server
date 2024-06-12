@@ -12,6 +12,13 @@ const userSchema = new Schema<IUser>({
   address: { type: String, required: true },
 }, { timestamps: true });
 
+
+// set '' after saving password
+userSchema.post('save', function (doc, next) {
+  doc.password = '';
+  next();
+});
+
 const User = model<IUser>('User', userSchema);
 
 export default User;

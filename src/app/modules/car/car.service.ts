@@ -2,6 +2,7 @@ import httpStatus from "http-status";
 import AppError from "../../errors/AppError";
 import { ICar } from "./car.interface";
 import Car from "./car.model";
+import { Request } from "express";
 
 const createCarIntoDB = async (payload: ICar) => {
   try {
@@ -41,9 +42,24 @@ const getACarIntoDB = async (id: string) => {
     throw new Error(err);
   }
 };
+const updateCarIntoDB = async (req: Request) => {
+  try {
+    const car = await Car.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+    if (!car || car.isDeleted) {
+      throw new AppError(httpStatus.BAD_REQUEST, "Car not found");
+    }
+
+    return car;
+  } catch (err: any) {
+    throw new Error(err);
+  }
+};
 
 export const CarServices = {
   createCarIntoDB,
   getAllCarsIntoDB,
   getACarIntoDB,
+  updateCarIntoDB,
 };

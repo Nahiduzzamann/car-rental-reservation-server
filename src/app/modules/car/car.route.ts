@@ -6,4 +6,5 @@ const router = express.Router();
 router.post("",verifyToken, checkAdmin, CarControllers.createCarController);
 router.get("", CarControllers.getAllCarsController);
 router.get("/:id", CarControllers.getACarController);
+router.put("/:id",verifyToken, checkAdmin, CarControllers.updateCarController);
 export const CarRoutes = router;

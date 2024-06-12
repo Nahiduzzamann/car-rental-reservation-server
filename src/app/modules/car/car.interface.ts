@@ -1,4 +1,4 @@
-export interface ICar extends Document {
+export interface ICar {
     name: string;
     description: string;
     color: string;

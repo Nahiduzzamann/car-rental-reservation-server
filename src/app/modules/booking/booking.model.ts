@@ -10,7 +10,6 @@ const bookingSchema = new Schema<IBooking>({
   startTime: { type: String, required: true },
   endTime: { type: String, default: null },
   totalCost: { type: Number, default: 0 },
-  isBooked: { type: String, enum: ['unconfirmed', 'confirmed'], default: 'unconfirmed' },
 }, { timestamps: true });
 
 const Booking = model<IBooking>('Booking', bookingSchema);

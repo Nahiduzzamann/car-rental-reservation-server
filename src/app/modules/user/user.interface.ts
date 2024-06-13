@@ -1,8 +1,9 @@
 export interface IUser extends Document {
-    name: string;
-    email: string;
-    role?: 'user' | 'admin';
-    password: string;
-    phone: string;
-    address: string;
-  }
+  _id?: string;
+  name: string;
+  email: string;
+  role?: "user" | "admin";
+  password: string;
+  phone: string;
+  address: string;
+}

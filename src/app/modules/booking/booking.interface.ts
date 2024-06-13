@@ -8,5 +8,4 @@ export interface IBooking extends Document {
   startTime: string;
   endTime: string | null;
   totalCost: number;
-  isBooked: "unconfirmed" | "confirmed";
 }

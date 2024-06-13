@@ -32,6 +32,7 @@ const getAllBookingsIntoDB = async (req: Request) => {
 };
 const getUserBookingsIntoDB = async (req: Request) => {
   const userId = req.user?._id;
+  console.log(userId);
 
   try {
     const bookings = await Booking.find({ user: userId }).populate("user car");
@@ -49,38 +50,48 @@ const carReturnIntoDB = async (req: Request) => {
   const { bookingId, endTime } = req.body;
 
   try {
-    const bookingData = await Booking.findById(bookingId).populate("user car");
-
+    const bookingData = await Booking.findById(bookingId).populate('user car');
 
     if (!bookingData) {
-      throw new AppError(httpStatus.BAD_REQUEST, "Booking not found");
+      throw new AppError(httpStatus.NOT_FOUND, 'Booking not found');
     }
-    bookingData.endTime = endTime;
 
+    // Validate startTime and endTime
     const startTimeHours =
-      parseFloat(bookingData.startTime.split(":")[0]) +
-      parseFloat(bookingData.startTime.split(":")[1]) / 60;
+      parseFloat(bookingData.startTime.split(':')[0]) +
+      parseFloat(bookingData.startTime.split(':')[1]) / 60;
     const endTimeHours =
-      parseFloat(endTime.split(":")[0]) +
-      parseFloat(endTime.split(":")[1]) / 60;
-    const duration = endTimeHours - startTimeHours;
-    if (!bookingData.car || typeof bookingData.car === "string") {
-      throw new AppError(httpStatus.BAD_REQUEST, "Car details not available");
-    }
-    const car = bookingData.car as typeof bookingData.car & {
-      pricePerHour: number;
-    };
-    bookingData.totalCost = duration * car.pricePerHour;
-    // console.log(duration * car.pricePerHour);
-    
-    await bookingData.save();
+      parseFloat(endTime.split(':')[0]) + parseFloat(endTime.split(':')[1]) / 60;
 
-    await Car.findByIdAndUpdate(bookingData.car._id, { status: "available" });
-    return bookingData;
+    if (startTimeHours > endTimeHours) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'End time must be greater than start time');
+    }
+
+    // Update booking data
+    bookingData.endTime = endTime;
+    const duration = endTimeHours - startTimeHours;
+
+    if (!bookingData.car || typeof bookingData.car === 'string') {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Car details not available');
+    }
+
+    const car = bookingData.car as any; // Casting to any for simplicity, should be properly typed
+    bookingData.totalCost = duration * car.pricePerHour;
+
+    // Update car status to available
+    await Car.findByIdAndUpdate(bookingData.car._id, { status: 'available' });
+
+    // Save updated booking data
+    const updatedBooking = await Booking.findByIdAndUpdate(bookingId, bookingData, {
+      new: true,
+      runValidators: true,
+    }).populate('user car');
+
+    return updatedBooking;
   } catch (err: any) {
-    throw new Error(err);
+    throw new Error(err.message);
   }
-};
+}
 const bookingACarIntoDB = async (req: Request) => {
   const { carId, date, startTime } = req.body;
   const userId = req.user?._id;
@@ -91,30 +102,11 @@ const bookingACarIntoDB = async (req: Request) => {
     if (!car || car.isDeleted) {
       throw new AppError(httpStatus.BAD_REQUEST, "Car not found");
     }
-
-    // Check for overlapping bookings
-    const existingBookings = await Booking.find({ car: carId, date });
-    const newStartTimeHours =
-      parseFloat(startTime.split(":")[0]) +
-      parseFloat(startTime.split(":")[1]) / 60;
-    for (const booking of existingBookings) {
-      const bookingStartTimeHours =
-        parseFloat(booking.startTime.split(":")[0]) +
-        parseFloat(booking.startTime.split(":")[1]) / 60;
-      const bookingEndTimeHours = booking.endTime
-        ? parseFloat(booking.endTime.split(":")[0]) +
-          parseFloat(booking.endTime.split(":")[1]) / 60
-        : null;
-
-      if (
-        bookingStartTimeHours <= newStartTimeHours &&
-        (!bookingEndTimeHours || bookingEndTimeHours > newStartTimeHours)
-      ) {
-        throw new AppError(
-          httpStatus.BAD_REQUEST,
-          "Car already booked for the overlapping time period"
-        );
-      }
+    if (car.status !== "available") {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "Car is not available for booking"
+      );
     }
 
     const bookingData = new Booking({

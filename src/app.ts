@@ -19,7 +19,7 @@ app.use(cors());
 app.use("/api", router);
 //home route to check connectivity
 app.get("/", (req: Request, res: Response) => {
-  res.send("Hello World!");
+  res.send("Welcome to our car rental service!");
 });
 app.use(globalErrorHandler);
 

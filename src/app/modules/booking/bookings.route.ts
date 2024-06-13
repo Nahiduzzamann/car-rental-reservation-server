@@ -10,6 +10,7 @@ router.get(
   checkAdmin,
   BookingsControllers.getAllBookingsController
 );
+
 router.post("", verifyToken, BookingsControllers.bookingACarController);
 router.get(
   "/my-bookings",

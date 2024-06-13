@@ -31,7 +31,7 @@ const getAllBookingsIntoDB = async (req: Request) => {
   }
 };
 const getUserBookingsIntoDB = async (req: Request) => {
-    const userId = req.user?._id;
+  const userId = req.user?._id;
 
   try {
     const bookings = await Booking.find({ user: userId }).populate("user car");
@@ -41,6 +41,42 @@ const getUserBookingsIntoDB = async (req: Request) => {
     }
 
     return bookings;
+  } catch (err: any) {
+    throw new Error(err);
+  }
+};
+const carReturnIntoDB = async (req: Request) => {
+  const { bookingId, endTime } = req.body;
+
+  try {
+    const bookingData = await Booking.findById(bookingId).populate("user car");
+
+
+    if (!bookingData) {
+      throw new AppError(httpStatus.BAD_REQUEST, "Booking not found");
+    }
+    bookingData.endTime = endTime;
+
+    const startTimeHours =
+      parseFloat(bookingData.startTime.split(":")[0]) +
+      parseFloat(bookingData.startTime.split(":")[1]) / 60;
+    const endTimeHours =
+      parseFloat(endTime.split(":")[0]) +
+      parseFloat(endTime.split(":")[1]) / 60;
+    const duration = endTimeHours - startTimeHours;
+    if (!bookingData.car || typeof bookingData.car === "string") {
+      throw new AppError(httpStatus.BAD_REQUEST, "Car details not available");
+    }
+    const car = bookingData.car as typeof bookingData.car & {
+      pricePerHour: number;
+    };
+    bookingData.totalCost = duration * car.pricePerHour;
+    // console.log(duration * car.pricePerHour);
+    
+    await bookingData.save();
+
+    await Car.findByIdAndUpdate(bookingData.car._id, { status: "available" });
+    return bookingData;
   } catch (err: any) {
     throw new Error(err);
   }
@@ -87,6 +123,9 @@ const bookingACarIntoDB = async (req: Request) => {
       startTime,
       user: userId,
     });
+    const upDateCar = await Car.findByIdAndUpdate(bookingData.car._id, {
+      status: "unavailable",
+    });
     const booking = await Booking.create(bookingData);
     return booking;
   } catch (err: any) {
@@ -97,5 +136,6 @@ const bookingACarIntoDB = async (req: Request) => {
 export const BookingServices = {
   getAllBookingsIntoDB,
   bookingACarIntoDB,
-  getUserBookingsIntoDB
+  getUserBookingsIntoDB,
+  carReturnIntoDB,
 };

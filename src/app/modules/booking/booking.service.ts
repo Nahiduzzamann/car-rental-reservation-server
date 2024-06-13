@@ -30,6 +30,21 @@ const getAllBookingsIntoDB = async (req: Request) => {
     throw new Error(err);
   }
 };
+const getUserBookingsIntoDB = async (req: Request) => {
+    const userId = req.user?._id;
+
+  try {
+    const bookings = await Booking.find({ user: userId }).populate("user car");
+
+    if (!bookings) {
+      throw new AppError(httpStatus.BAD_REQUEST, "Failed to fetch boking");
+    }
+
+    return bookings;
+  } catch (err: any) {
+    throw new Error(err);
+  }
+};
 const bookingACarIntoDB = async (req: Request) => {
   const { carId, date, startTime } = req.body;
   const userId = req.user?._id;
@@ -82,4 +97,5 @@ const bookingACarIntoDB = async (req: Request) => {
 export const BookingServices = {
   getAllBookingsIntoDB,
   bookingACarIntoDB,
+  getUserBookingsIntoDB
 };

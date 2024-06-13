@@ -11,4 +11,9 @@ router.get(
   BookingsControllers.getAllBookingsController
 );
 router.post("", verifyToken, BookingsControllers.bookingACarController);
+router.get(
+  "/my-bookings",
+  verifyToken,
+  BookingsControllers.getUserBookingsController
+);
 export const BookingRoutes = router;

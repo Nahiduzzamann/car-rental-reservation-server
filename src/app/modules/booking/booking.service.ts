@@ -97,29 +97,42 @@ const bookingACarIntoDB = async (req: Request) => {
   const userId = req.user?._id;
 
   try {
+    // Find the car by ID
     const car = await Car.findById(carId);
 
+    // Throw error if car is not found or is marked as deleted
     if (!car || car.isDeleted) {
-      throw new AppError(httpStatus.BAD_REQUEST, "Car not found");
-    }
-    if (car.status !== "available") {
-      throw new AppError(
-        httpStatus.BAD_REQUEST,
-        "Car is not available for booking"
-      );
+      throw new AppError(httpStatus.BAD_REQUEST, 'Car not found');
     }
 
-    const bookingData = new Booking({
+    // Throw error if car is not available for booking
+    if (car.status !== 'available') {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Car is not available for booking');
+    }
+
+    // Create the booking data object
+    const bookingData= {
       car: carId,
       date,
       startTime,
       user: userId,
-    });
-    const upDateCar = await Car.findByIdAndUpdate(bookingData.car._id, {
-      status: "unavailable",
-    });
+    };
+
+    // Save the booking to the database
     const booking = await Booking.create(bookingData);
-    return booking;
+
+    // Ensure booking is a Mongoose Document by casting
+    const populatedBooking = await Booking.findById(booking._id).populate('user').populate('car');
+
+    if (!populatedBooking) {
+      throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to retrieve populated booking');
+    }
+
+    // Update the car status to "unavailable"
+    car.status = 'unavailable';
+    await car.save();
+
+    return populatedBooking;
   } catch (err: any) {
     throw new Error(err);
   }

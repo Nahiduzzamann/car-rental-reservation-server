@@ -1,5 +1,6 @@
 # Car Rental Reservation System
-
+## Live URL
+[Live Application](car-rental-reservation-server.vercel.app)
 ## Table of Contents
 
 - [Introduction](#introduction)
@@ -64,7 +65,7 @@ The Car Rental Reservation System is a robust application designed to facilitate
 Clone the repository:
 
 ```sh
-git clone https://github.com/your-username/car-rental-reservation.git
+git clone https://github.com/Nahiduzzamann/car-rental-reservation-server.git
 cd car-rental-reservation
 
 ```

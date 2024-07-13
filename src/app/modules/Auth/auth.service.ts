@@ -8,7 +8,7 @@ interface LoginInput {
   password: string;
 }
 const signUpUser = async (payload: IUser) => {
-  const { name, email, password, phone, address } = payload;
+  const { name, email,role, password, phone, address } = payload;
   const existingUser = await User.findOne({ email });
   if (existingUser) {
     throw new AppError(400, "Email already in use");
@@ -20,9 +20,11 @@ const signUpUser = async (payload: IUser) => {
     const user = new User({
       name,
       email,
+      role,
       password: hashedPassword,
       phone,
       address,
+
     });
     const res = await User.create(user);
 
